@@ -111,6 +111,65 @@
   function dist(ax,ay,bx,by){ return Math.hypot(ax-bx, ay-by); }
   function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
+  function shuffle(arr){
+    const a = [...arr];
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function topicLabel(topic){
+    const meta = Content.TOPIC_META[topic] || { label: topic };
+    return `${meta.icon || ''} ${meta.label}`.trim();
+  }
+
+  function obstacleName(obstacle){
+    return (Content.obstacleTemplates[obstacle] || {name: obstacle}).name;
+  }
+
+  function updateTopBar(){
+    gemsText.textContent = `💎 ${state.profile.gems || 0}`;
+  }
+
+  }
+
+  function playTone(freq, dur=0.16, gain=0.18){
+    if(state.profile.settings.mute) return;
+    ensureAudio();
+    if(!audioCtx) return;
+
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    o.connect(g);
+    g.connect(audioCtx.destination);
+
+    const t = audioCtx.currentTime;
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.start(t);
+    o.stop(t + dur);
+  }
+
+  function playSuccess(){
+    playTone(660, 0.12, 0.16);
+    setTimeout(()=>playTone(990, 0.10, 0.12), 70);
+  }
+
+  function playFail(){
+    playTone(220, 0.16, 0.14);
+    setTimeout(()=>playTone(180, 0.12, 0.10), 70);
+  }
+
+  // ---------------- Utilities ----------------
+  function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function dist(ax,ay,bx,by){ return Math.hypot(ax-bx, ay-by); }
+  function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
   function topicLabel(topic){
     const meta = Content.TOPIC_META[topic] || { label: topic };
     return `${meta.icon || ''} ${meta.label}`.trim();
@@ -197,6 +256,33 @@
     if(isBoss) return 'boss';
     const pool = ['door','laser','keys','jammer'];
     return choice(pool);
+  }
+
+  function ensureChoiceHasAnswer(problem){
+    if(!problem || !Array.isArray(problem.multiChoice)) return;
+    const ans = problem.answer;
+    const tol = typeof problem.tolerance === 'number' ? problem.tolerance : (typeof ans === 'number' ? 0.01 : 0);
+
+    const same = (a,b)=>{
+      if(typeof ans === 'number'){
+        const n1 = Number(a), n2 = Number(b);
+        if(!Number.isFinite(n1) || !Number.isFinite(n2)) return false;
+        return Math.abs(n1 - n2) <= tol;
+      }
+      return String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+    };
+
+    const unique = [];
+    problem.multiChoice.forEach(opt=>{
+      if(!unique.some(x=>same(x,opt))) unique.push(opt);
+    });
+
+    if(!unique.some(opt=>same(opt, ans))) unique.unshift(ans);
+
+    const answerFirst = unique.filter(opt=>same(opt, ans));
+    const rest = unique.filter(opt=>!same(opt, ans));
+    const options = [...answerFirst, ...shuffle(rest)];
+    problem.multiChoice = options.slice(0,4);
   }
 
   function spawnGems(count, avoid){
@@ -289,6 +375,48 @@
       room.rhythmMode = true;
     }
 
+    }
+
+    const left = { kind:'safe', topic: safe, bonus: 0 };
+    const right = { kind:'spicy', topic: spicy, bonus: 2 };
+
+    return { left, right };
+  }
+
+  function enterRoom({ topic, obstacle, isBoss }){
+    const wing = state.run.wing;
+    const theme = wing.theme || { a:'#6af0c6', b:'#f08dff', floor:'neon' };
+
+    const room = {
+      index: state.run.roomIndex,
+      isBoss: !!isBoss,
+      topic,
+      obstacle: isBoss ? 'boss' : obstacle,
+      theme,
+      terminal: { x: WIDTH/2, y: HEIGHT/2, w: 150, h: 84 },
+      requiredLocks: 1,
+      locksSolved: 0,
+      complete: false,
+      exits: null,
+      gems: spawnGems(isBoss ? 3 : 7, { x: WIDTH/2, y: HEIGHT/2 }),
+      sentry: null,
+      rhythmMode: false
+    };
+
+    const mastery = Progression.masteryFor(state.profile, topic);
+    if(room.isBoss){
+      room.requiredLocks = Progression.bossSteps(mastery);
+    } else {
+      room.requiredLocks = (Content.obstacleTemplates[room.obstacle] || {problems:1}).problems;
+    }
+
+    room.sentry = spawnSentry(room);
+
+    // Laser rooms sometimes turn into rhythm locks (surprise).
+    if(room.obstacle === 'laser' && !room.isBoss && Math.random() < 0.33){
+      room.rhythmMode = true;
+    }
+
     state.room = room;
 
     // Reset player position and trail
@@ -324,6 +452,7 @@
     const mastery = Progression.masteryFor(state.profile, state.room.topic);
     const level = Math.max(1, Progression.difficulty(mastery) - 1);
     const p = MathContent.makeProblem('mixed', level);
+    p.timeLimitMs = 8000;
     p.timeLimitMs = 5500;
     p.ui = {
       title: 'Alarm Hack • quick!',
@@ -337,6 +466,7 @@
     state.autoHintAt = performance.now() + 2200;
     state.timeoutArmed = false;
 
+    ensureChoiceHasAnswer(p);
     UI.showProblem(p, true, false, submitAnswer, requestHint, useGadget, leaveChallenge);
   }
 
@@ -371,6 +501,7 @@
       p.ui.progress = `Step ${room.locksSolved + 1}/${room.requiredLocks}`;
     }
 
+    ensureChoiceHasAnswer(p);
     state.currentProblem = p;
     state.problemStartTs = performance.now();
     state.timeRemainingMs = p.timeLimitMs || 0;
@@ -653,11 +784,24 @@
     return out;
   }
 
+  }
+
+  function uniqTopics(list){
+    const out = [];
+    (list||[]).forEach(t=>{ if(t && !out.includes(t)) out.push(t); });
+    return out;
+  }
+
   function checkAutoUnlocks(){
     // Soft unlocks based on total gems (encourages return).
     if(state.profile.gems >= 25 && !state.profile.cosmetics.outfits.includes('Prismatic Cloak')){
       state.profile.cosmetics.outfits.push('Prismatic Cloak');
       toast('Unlocked outfit: Prismatic Cloak', 'good');
+    }
+    if(state.profile.gems >= 40 && !state.profile.cosmetics.trails.includes('Comet Tail')){
+      state.profile.cosmetics.trails.push('Comet Tail');
+      toast('Unlocked trail: Comet Tail', 'good');
+    }
     }
     if(state.profile.gems >= 40 && !state.profile.cosmetics.trails.includes('Comet Tail')){
       state.profile.cosmetics.trails.push('Comet Tail');
@@ -752,6 +896,196 @@
     // glow
     ctx.fillStyle = hexAlpha(room.theme.a, 0.10);
     ctx.fillRect(r.x-r.w/2-10, r.y-r.h/2-10, r.w+20, r.h+20);
+
+    ctx.fillStyle = 'rgba(17,23,42,0.85)';
+    roundRect(r.x-r.w/2, r.y-r.h/2, r.w, r.h, 12);
+    ctx.fill();
+
+    ctx.strokeStyle = hexAlpha(room.theme.a, 0.55);
+    ctx.stroke();
+
+    // display line
+    ctx.fillStyle = hexAlpha(room.theme.a, 0.9);
+    ctx.font = '16px ui-sans-serif, system-ui';
+    const label = room.complete ? 'ACCESS GRANTED' : (room.rhythmMode ? 'RHYTHM LOCK' : 'HACK TERMINAL');
+    ctx.fillText(label, r.x - r.w/2 + 14, r.y - 6);
+
+    ctx.fillStyle = 'rgba(229,236,255,0.75)';
+    ctx.font = '12px ui-sans-serif, system-ui';
+    ctx.fillText(`${obstacleName(room.obstacle)} • ${topicLabel(room.topic)}`, r.x - r.w/2 + 14, r.y + 16);
+
+    // pulse dot
+    ctx.beginPath();
+    ctx.fillStyle = hexAlpha(room.theme.b, 0.9);
+    ctx.arc(r.x + r.w/2 - 18, r.y - r.h/2 + 18, 6 + Math.sin(t*4)*1.5, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  function drawGems(room){
+    room.gems.forEach(g=>{
+      if(g.collected) return;
+      const bob = Math.sin((performance.now()/300) + g.bob) * 3;
+      ctx.fillStyle = 'rgba(106,240,198,0.18)';
+      ctx.beginPath();
+      ctx.arc(g.x, g.y + bob, g.r + 8, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(106,240,198,0.85)';
+      ctx.beginPath();
+      ctx.moveTo(g.x, g.y + bob - g.r);
+      ctx.lineTo(g.x + g.r, g.y + bob);
+      ctx.lineTo(g.x, g.y + bob + g.r);
+      ctx.lineTo(g.x - g.r, g.y + bob);
+      ctx.closePath();
+      ctx.fill();
+    });
+  }
+
+  function drawSentry(room, dt){
+    if(!room.sentry) return;
+    const s = room.sentry;
+
+    if(s.disabledMs > 0){
+      // Draw faint disabled sentry
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r+4, 0, Math.PI*2);
+      ctx.fill();
+      return;
+    }
+
+    ctx.fillStyle = 'rgba(255,107,107,0.22)';
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r+10, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,107,107,0.85)';
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(12,15,26,0.85)';
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, 4, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  function drawExits(room){
+    if(!room.complete || !room.exits) return;
+    const leftDoor = { x: 140, y: 90, w: 190, h: 68 };
+    const rightDoor = { x: WIDTH-140, y: 90, w: 190, h: 68 };
+
+    room.exitRects = { left:leftDoor, right:rightDoor };
+
+    drawDoor(leftDoor, room.exits.left, room.theme, true);
+    drawDoor(rightDoor, room.exits.right, room.theme, false);
+  }
+
+  function drawDoor(rect, pick, theme, isLeft){
+    const x = rect.x, y = rect.y, w = rect.w, h = rect.h;
+    ctx.fillStyle = 'rgba(17,23,42,0.85)';
+    roundRect(x-w/2, y-h/2, w, h, 14);
+    ctx.fill();
+    ctx.strokeStyle = isLeft ? hexAlpha(theme.a, 0.65) : hexAlpha(theme.b, 0.65);
+    ctx.stroke();
+
+    ctx.font = '13px ui-sans-serif, system-ui';
+    ctx.fillStyle = 'rgba(229,236,255,0.85)';
+    const kind = pick.kind === 'spicy' ? 'Wildcard' : 'Safe';
+    ctx.fillText(`${kind} Route`, x - w/2 + 14, y - 6);
+    ctx.fillStyle = 'rgba(229,236,255,0.75)';
+    ctx.fillText(`${topicLabel(pick.topic)}`, x - w/2 + 14, y + 14);
+
+    const bonus = pick.bonus ? `+${pick.bonus}💎` : '+0💎';
+    ctx.fillStyle = pick.kind === 'spicy' ? 'rgba(255,179,71,0.9)' : 'rgba(122,240,155,0.9)';
+    ctx.fillText(bonus, x + w/2 - 60, y + 14);
+  }
+
+  function drawMirror(room){
+    if(!room.mirrorUntil) return;
+    if(performance.now() > room.mirrorUntil) return;
+
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = 'rgba(240,141,255,0.8)';
+    ctx.fillStyle = 'rgba(240,141,255,0.08)';
+    roundRect(WIDTH/2 - 150, HEIGHT/2 - 120, 300, 240, 18);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(229,236,255,0.85)';
+    ctx.font = '14px ui-sans-serif, system-ui';
+    ctx.fillText('Mirror Math', WIDTH/2 - 45, HEIGHT/2 - 88);
+
+    ctx.fillStyle = 'rgba(229,236,255,0.70)';
+    ctx.font = '12px ui-sans-serif, system-ui';
+    ctx.fillText('Undo the same step on both sides.', WIDTH/2 - 122, HEIGHT/2 - 64);
+
+    // Decorative balance bar
+    ctx.strokeStyle = 'rgba(106,240,198,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(WIDTH/2 - 110, HEIGHT/2);
+    ctx.lineTo(WIDTH/2 + 110, HEIGHT/2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(WIDTH/2 - 70, HEIGHT/2 + 26, 18, 0, Math.PI*2);
+    ctx.arc(WIDTH/2 + 70, HEIGHT/2 + 26, 18, 0, Math.PI*2);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function roundRect(x,y,w,h,r){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y, x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x, y+h, rr);
+    ctx.arcTo(x, y+h, x, y, rr);
+    ctx.arcTo(x, y, x+w, y, rr);
+    ctx.closePath();
+  }
+
+  function drawPlayer(){
+    const trailLen = getTrailLength();
+    player.trail.push({ x: player.x, y: player.y, life: 1 });
+    if(player.trail.length > trailLen) player.trail.shift();
+
+    const color = getOutfitColor();
+
+    // trail
+    for(let i=0;i<player.trail.length;i++){
+      const p = player.trail[i];
+      const a = i/player.trail.length;
+      ctx.fillStyle = hexAlpha(color, 0.10 + a*0.25);
+      ctx.fillRect(p.x-4, p.y-4, 8, 8);
+    }
+
+    // body
+    ctx.fillStyle = hexAlpha(color, 0.85);
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
+    ctx.fill();
+
+    // highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.beginPath();
+    ctx.arc(player.x-5, player.y-6, 5, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  function getOutfitColor(){
+    const o = state.profile.equipped?.outfit || 'Stealth Hoodie';
+    const meta = Content.cosmeticMeta?.outfits?.[o];
+    return meta?.color || '#6af0c6';
+  }
+
+  function getTrailLength(){
+    const t = state.profile.equipped?.trail || 'Neon Wisp';
+    const meta = Content.cosmeticMeta?.trails?.[t];
+    return meta?.length || 18;
+  }
+
 
     ctx.fillStyle = 'rgba(17,23,42,0.85)';
     roundRect(r.x-r.w/2, r.y-r.h/2, r.w, r.h, 12);
@@ -1119,6 +1453,13 @@
       UI.closeModal('#menu-modal');
       toast('Resume', 'neutral');
       return;
+    }
+
+    if(state.scene === 'challenge'){
+      // Pause from within a lock just hides the panel. Timer continues lightly.
+      UI.hideProblem();
+    }
+
     }
 
     if(state.scene === 'challenge'){

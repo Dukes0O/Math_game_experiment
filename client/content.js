@@ -226,6 +226,16 @@
     ],
     miss:[
       'The floor hums: “Try a smaller version first.”',
+      'A projector shows your last step in slow motion.',
+      'The panel repeats the hint: precision first.'
+    ],
+    ally:[
+      'A guard lowers a visor: “I can tutor once. Ask.”',
+      'Ally whispers: “Mirror math helps. Try Balance Beam.”'
+    ],
+    glitch:[
+      'Curator glitches: “Solve before I... zzzip. Okay, slower now.”',
+      'Neon text stutters: “Mist…ake detected. Recenter.”'
       'A projector replays your last step in slow motion.'
     ],
     ally:[
@@ -241,6 +251,31 @@
   };
 
   const bossScripts = [
+    { id:'balance-core', topic:'equations',  steps:['Check both sides of the equation visually.','Isolate x by moving one term.','Divide or multiply to finish.','Verify by plugging back in.'] },
+    { id:'neon-grid',    topic:'coordinates',steps:['Locate the quadrant.','Count grid steps (Manhattan).','Plot treasure point.','Check mirror symmetry.'] },
+    { id:'percent-pulse',topic:'decimals',   steps:['Turn percent into decimal.','Find part of the whole.','Recombine price and adjustment.','Sense-check with rounding.'] },
+    { id:'shape-warden', topic:'geometry',   steps:['Split the shape.','Find each rectangle measure.','Add totals.','Check perimeter or area.'] },
+  ];
+
+  // Shop items (gadgets + cosmetics)
+  const shopItems = [
+    { id:'g_xray', type:'gadget', name:'X-Ray Goggles', price:14, desc:'Removes one wrong option in a choice lock.' },
+    { id:'g_balance', type:'gadget', name:'Balance Beam', price:16, desc:'Reveals a mirror-math hint for equations.' },
+    { id:'g_percent', type:'gadget', name:'Percent Lens', price:14, desc:'Shows a percent-to-decimal nudge.' },
+    { id:'g_checkpoint', type:'gadget', name:'Checkpoint Token', price:22, desc:'One “undo” for a mistake in a boss vault.' },
+    { id:'g_smoke', type:'gadget', name:'Smoke Bomb', price:16, desc:'Temporarily blocks roaming sentry orbs in a room.' },
+
+    { id:'o_prismatic', type:'cosmetic', category:'outfits', name:'Prismatic Cloak', price:28, desc:'A sparkly cloak that makes your trail shimmer.' },
+    { id:'t_comet', type:'cosmetic', category:'trails', name:'Comet Tail', price:18, desc:'A longer trail that looks faster.' },
+    { id:'p_victory', type:'cosmetic', category:'poses', name:'Victory Spin', price:16, desc:'A silly victory pose for the replay clip.' }
+  ];
+
+  // Run missions: one is chosen each run.
+  const missions = [
+    { id:'no-hints-3',   title:'Ghost Hacker',    desc:'Clear 3 locks without using a hint.',                reward: 10 },
+    { id:'streak-5',     title:'Combo Artist',    desc:'Hit a streak of 5 correct locks.',                   reward: 12 },
+    { id:'no-sentry-hit',title:'Quiet Feet',      desc:'Finish the run without touching a sentry orb.',      reward: 10 },
+    { id:'boss-clean',   title:'Vault Whisperer', desc:'Beat the boss vault with at most 1 hint.',           reward: 14 }
     { id:'balance-core', topic:'equations', steps:['Spot the x term.','Move constants to one side.','Divide or multiply to finish.','Verify by plugging back in.'] },
     { id:'neon-grid', topic:'coordinates', steps:['Identify the quadrant.','Count grid steps.','Plot the point.','Double-check the signs.'] },
     { id:'percent-pulse', topic:'decimals', steps:['Convert percent to decimal.','Find the part of the whole.','Add/subtract adjustment.','Sense-check by rounding.'] },
