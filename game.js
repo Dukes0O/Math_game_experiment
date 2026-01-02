@@ -111,6 +111,15 @@
   function dist(ax,ay,bx,by){ return Math.hypot(ax-bx, ay-by); }
   function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
+  function shuffle(arr){
+    const a = [...arr];
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
   function topicLabel(topic){
     const meta = Content.TOPIC_META[topic] || { label: topic };
     return `${meta.icon || ''} ${meta.label}`.trim();
@@ -197,6 +206,33 @@
     if(isBoss) return 'boss';
     const pool = ['door','laser','keys','jammer'];
     return choice(pool);
+  }
+
+  function ensureChoiceHasAnswer(problem){
+    if(!problem || !Array.isArray(problem.multiChoice)) return;
+    const ans = problem.answer;
+    const tol = typeof problem.tolerance === 'number' ? problem.tolerance : (typeof ans === 'number' ? 0.01 : 0);
+
+    const same = (a,b)=>{
+      if(typeof ans === 'number'){
+        const n1 = Number(a), n2 = Number(b);
+        if(!Number.isFinite(n1) || !Number.isFinite(n2)) return false;
+        return Math.abs(n1 - n2) <= tol;
+      }
+      return String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+    };
+
+    const unique = [];
+    problem.multiChoice.forEach(opt=>{
+      if(!unique.some(x=>same(x,opt))) unique.push(opt);
+    });
+
+    if(!unique.some(opt=>same(opt, ans))) unique.unshift(ans);
+
+    const answerFirst = unique.filter(opt=>same(opt, ans));
+    const rest = unique.filter(opt=>!same(opt, ans));
+    const options = [...answerFirst, ...shuffle(rest)];
+    problem.multiChoice = options.slice(0,4);
   }
 
   function spawnGems(count, avoid){
@@ -324,7 +360,7 @@
     const mastery = Progression.masteryFor(state.profile, state.room.topic);
     const level = Math.max(1, Progression.difficulty(mastery) - 1);
     const p = MathContent.makeProblem('mixed', level);
-    p.timeLimitMs = 5500;
+    p.timeLimitMs = 8000;
     p.ui = {
       title: 'Alarm Hack • quick!',
       progress: 'Beat the alarm before it calls backup'
@@ -337,6 +373,7 @@
     state.autoHintAt = performance.now() + 2200;
     state.timeoutArmed = false;
 
+    ensureChoiceHasAnswer(p);
     UI.showProblem(p, true, false, submitAnswer, requestHint, useGadget, leaveChallenge);
   }
 
@@ -371,6 +408,7 @@
       p.ui.progress = `Step ${room.locksSolved + 1}/${room.requiredLocks}`;
     }
 
+    ensureChoiceHasAnswer(p);
     state.currentProblem = p;
     state.problemStartTs = performance.now();
     state.timeRemainingMs = p.timeLimitMs || 0;
