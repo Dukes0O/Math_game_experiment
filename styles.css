@@ -1,6 +1,20 @@
 :root {
   --bg: #0c0f1a;
   --panel: #11172a;
+  --accent: #6af0c6;
+  --accent-2: #f08dff;
+  --text: #e5ecff;
+  --warning: #ffb347;
+  --error: #ff6b6b;
+  --success: #7af09b;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow: hidden;
+}
   --panel-2: #0e1324;
   --accent: #6af0c6;
   --accent-2: #f08dff;
@@ -29,6 +43,44 @@ body {
   gap: 8px;
   padding: 10px;
   align-items: center;
+  background: #0b1324;
+  border-bottom: 1px solid #1d2740;
+}
+#top-bar button {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid #1d2c42;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+#status-text { margin-left: auto; font-size: 14px; opacity: 0.8; }
+#canvas-wrap { position: relative; display: inline-block; margin: 10px; }
+#game-canvas {
+  border: 2px solid #1d2c42;
+  border-radius: 8px;
+  background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.06), transparent 30%), #0a0d18;
+}
+.panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 320px;
+  padding: 16px;
+  background: rgba(12,15,26,0.9);
+  border: 1px solid #1d2740;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  z-index: 5;
+}
+.panel.hidden { display: none; }
+.panel .prompt { font-size: 18px; margin-bottom: 10px; }
+.panel .choices button { display: block; width: 100%; margin-bottom: 6px; }
+.panel .free-response { display: flex; gap: 6px; margin-top: 10px; }
+.panel input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #1d2740; background: #0f1628; color: var(--text); }
+.panel button { padding: 8px; border-radius: 6px; border: 1px solid #1d2740; background: var(--panel); color: var(--text); }
+.panel .hints div { background: rgba(255,255,255,0.05); padding: 6px; border-radius: 6px; margin-bottom: 4px; }
+.panel .feedback { margin-top: 8px; font-weight: 600; }
   background: rgba(11,19,36,0.95);
   border-bottom: 1px solid #1d2740;
   backdrop-filter: blur(6px);
@@ -186,6 +238,19 @@ body {
   z-index: 20;
   color: var(--text);
 }
+.modal.hidden { display: none; }
+.modal .card {
+  background: var(--panel);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #1d2740;
+  width: min(800px, 90vw);
+  max-height: 80vh;
+  overflow: auto;
+}
+#touch-controls { position: absolute; left: 10px; bottom: 10px; display: none; }
+#joy { width: 90px; height: 90px; border-radius: 50%; border: 2px solid #1d2740; background: rgba(255,255,255,0.05); }
+#touch-submit { margin-top: 8px; width: 100%; padding: 10px; }
 
 .modal.hidden { display: none; }
 
@@ -232,6 +297,25 @@ body {
   position: fixed;
   left: 10px;
   top: 60px;
+  background: rgba(0,0,0,0.7);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #1d2740;
+  font-size: 12px;
+  z-index: 30;
+}
+.high-contrast {
+  --bg: #000;
+  --panel: #111;
+  --accent: #0ff;
+  --text: #fff;
+  --accent-2: #ff0;
+}
+.large-text { font-size: 18px; }
+.reduce-motion * { transition: none !important; animation: none !important; }
+.gadget-row button { margin: 4px 2px; }
+.boss-step { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; margin-bottom: 6px; }
+#replay-modal canvas { width: 100%; }
   background: rgba(0,0,0,0.72);
   padding: 10px;
   border-radius: 12px;

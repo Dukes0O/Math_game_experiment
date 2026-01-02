@@ -1,0 +1,6 @@
+{
+  "Rin": {"intro": "Welcome to the Lanterns. Keep your steps quiet.", "trust_high": "I trust you with the next wing."},
+  "Byte": {"intro": "I wired the gadgets. Use them well.", "hint_heavy": "Hints are fine, but try sketching the balance."},
+  "Mara": {"intro": "Every artifact echoes a story.", "lore": "The Curator once curated worlds."},
+  "Curator": {"intro": "You are anomalies. I adapt.", "taunt_sign": "Signs flipped? I will mirror them."}
+}

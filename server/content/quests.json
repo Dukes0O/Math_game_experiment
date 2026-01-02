@@ -1,0 +1,3 @@
+[
+  {"id":"q_intro","title":"Recover the First Artifact","giver":"Rin","wing":"atrium","difficulty_band":"easy","tags":["integers","order"],"steps":[{"type":"reach_room","requirements":{"wing":"atrium"}},{"type":"solve_topic","requirements":{"topic":"integers","min_accuracy":0.6}}, {"type":"boss_phase","requirements":{"topic":"order"}}],"rewards":{"gems":50,"xp":100,"relationship":{"Rin":5}},"branch_choices":[{"choice_id":"ally_guard","description":"Recruit ally guard"}]}
+]
