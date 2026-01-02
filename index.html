@@ -21,7 +21,6 @@
     <button id="settings-btn">Settings</button>
     <button id="mute-btn">Mute</button>
     <span id="status-text"></span>
-  </div>
     <span id="profile-gems" title="Total Gems">💎 0</span>
   </div>
 
@@ -29,14 +28,10 @@
     <canvas id="game-canvas" width="960" height="540"></canvas>
     <div id="touch-controls">
       <div id="joy"></div>
-      <button id="touch-submit">Submit</button>
-    </div>
-  </div>
-  <div id="question-panel" class="panel hidden">
-    <div class="prompt"></div>
-    <div class="choices"></div>
-      <button id="touch-interact">Hack</button>
-      <button id="touch-submit">Enter</button>
+      <div class="touch-actions">
+        <button id="touch-interact">Hack</button>
+        <button id="touch-submit">Enter</button>
+      </div>
     </div>
   </div>
 
@@ -50,17 +45,12 @@
     </div>
 
     <div class="prompt"></div>
-
     <div class="choices"></div>
 
     <div class="free-response">
       <input type="text" id="answer-input" placeholder="Type answer">
       <button id="submit-answer">Enter</button>
     </div>
-    <div class="hints"></div>
-    <div class="feedback"></div>
-    <div class="gadget-row"></div>
-  </div>
 
     <div class="q-actions">
       <button id="hint-btn">Hint</button>
@@ -69,7 +59,6 @@
 
     <div class="hints"></div>
     <div class="feedback"></div>
-
     <div class="gadget-row"></div>
   </div>
 
@@ -78,7 +67,6 @@
   <div id="settings-modal" class="modal hidden"></div>
   <div id="boss-modal" class="modal hidden"></div>
   <div id="replay-modal" class="modal hidden"></div>
-  <div id="debug-overlay" class="hidden"></div>
   <div id="shop-modal" class="modal hidden"></div>
   <div id="debug-overlay" class="hidden"></div>
   <div id="toast" class="toast hidden" aria-live="polite"></div>
