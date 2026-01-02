@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Heist: The Algebra Artifact</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!--
+    Math Heist works offline. Open index.html directly (file://) to play.
+    Optional local server (not required):
+      python -m http.server 8000
+      npx serve
+  -->
+  <div id="top-bar">
+    <button id="start-run">Start Heist</button>
+    <button id="heist-board">Heist Board</button>
+    <button id="report-screen-btn">Report</button>
+    <button id="settings-btn">Settings</button>
+    <button id="mute-btn">Mute</button>
+    <span id="status-text"></span>
+  </div>
+  <div id="canvas-wrap">
+    <canvas id="game-canvas" width="960" height="540"></canvas>
+    <div id="touch-controls">
+      <div id="joy"></div>
+      <button id="touch-submit">Submit</button>
+    </div>
+  </div>
+  <div id="question-panel" class="panel hidden">
+    <div class="prompt"></div>
+    <div class="choices"></div>
+    <div class="free-response">
+      <input type="text" id="answer-input" placeholder="Type answer">
+      <button id="submit-answer">Enter</button>
+    </div>
+    <div class="hints"></div>
+    <div class="feedback"></div>
+    <div class="gadget-row"></div>
+  </div>
+  <div id="menu-modal" class="modal hidden"></div>
+  <div id="report-modal" class="modal hidden"></div>
+  <div id="settings-modal" class="modal hidden"></div>
+  <div id="boss-modal" class="modal hidden"></div>
+  <div id="replay-modal" class="modal hidden"></div>
+  <div id="debug-overlay" class="hidden"></div>
+  <script src="storage.js"></script>
+  <script src="content.js"></script>
+  <script src="progress.js"></script>
+  <script src="math.js"></script>
+  <script src="ui.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
