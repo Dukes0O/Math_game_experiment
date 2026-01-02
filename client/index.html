@@ -15,36 +15,62 @@
   -->
   <div id="top-bar">
     <button id="start-run">Start Heist</button>
+    <button id="shop-btn">Shop</button>
     <button id="heist-board">Heist Board</button>
     <button id="report-screen-btn">Report</button>
     <button id="settings-btn">Settings</button>
     <button id="mute-btn">Mute</button>
     <span id="status-text"></span>
+    <span id="profile-gems" title="Total Gems">💎 0</span>
   </div>
+
   <div id="canvas-wrap">
     <canvas id="game-canvas" width="960" height="540"></canvas>
     <div id="touch-controls">
       <div id="joy"></div>
-      <button id="touch-submit">Submit</button>
+      <div class="touch-actions">
+        <button id="touch-interact">Hack</button>
+        <button id="touch-submit">Enter</button>
+      </div>
     </div>
   </div>
-  <div id="question-panel" class="panel hidden">
+
+  <div id="question-panel" class="panel hidden" role="dialog" aria-modal="true">
+    <div class="q-header">
+      <div class="q-title">Lock</div>
+      <div class="q-progress">0/0</div>
+    </div>
+    <div class="timebar" aria-hidden="true">
+      <div class="timebar-fill" id="q-timebar"></div>
+    </div>
+
     <div class="prompt"></div>
     <div class="choices"></div>
+
     <div class="free-response">
       <input type="text" id="answer-input" placeholder="Type answer">
       <button id="submit-answer">Enter</button>
     </div>
+
+    <div class="q-actions">
+      <button id="hint-btn">Hint</button>
+      <button id="leave-btn" title="Close and return to the room">Back</button>
+    </div>
+
     <div class="hints"></div>
     <div class="feedback"></div>
     <div class="gadget-row"></div>
   </div>
+
   <div id="menu-modal" class="modal hidden"></div>
   <div id="report-modal" class="modal hidden"></div>
   <div id="settings-modal" class="modal hidden"></div>
   <div id="boss-modal" class="modal hidden"></div>
   <div id="replay-modal" class="modal hidden"></div>
+  <div id="shop-modal" class="modal hidden"></div>
   <div id="debug-overlay" class="hidden"></div>
+  <div id="toast" class="toast hidden" aria-live="polite"></div>
+
   <script src="storage.js"></script>
   <script src="content.js"></script>
   <script src="progress.js"></script>
