@@ -1,42 +1,4 @@
 (function(){
-  const wings = [
-    { id:'frozen-hall', name:'Frozen Integers Wing', topics:['integers','order'], flavor:'Temperature alarms hum inside a hall of icy statues.' },
-    { id:'glimmer-market', name:'Glimmer Market Wing', topics:['decimals','ratios'], flavor:'Holographic stalls flicker with floating price tags.' },
-    { id:'gear-lab', name:'Gear Lab Wing', topics:['equations','order','coordinates'], flavor:'Balancing arms and glowing mirrors reveal math secrets.' },
-    { id:'atrium', name:'Grand Atrium', topics:['geometry','mixed'], flavor:'Marble grids and shimmering light panels form puzzles.' }
-  ];
-
-  const curatorPersonalities = {
-    default: ['Curator: "Security nominal."','Curator: "Prove you can balance thought and action."'],
-    hintHeavy: ['Curator: "You like hints? I buffered extra glow on the mirrors."','Curator: "I will slow my narration while you think."'],
-    speedy: ['Curator (fast): "You move like a rumor. Try this before I finish—" ... "fine, I will slow down."'],
-    signSlip: ['Curator: "Negatives are sneaky; I mirrored the panel for you."','Curator glitch: "Minus... plus? Let me rewind time for clarity."']
-  };
-
-  const obstacleTemplates = {
-    door: { name:'Door Lock', problems:1 },
-    laser: { name:'Laser Grid', problems:2 },
-    keys: { name:'Key Fragments', problems:3 },
-    jammer: { name:'Signal Jammer', problems:2 },
-    boss: { name:'Boss Room', problems:4 }
-  };
-
-  const narration = {
-    streak:['The museum lights rewind a few seconds—Time Refund!','A guard blinks and nods: "Keep that streak."'],
-    miss:['The floor hums: "Try a smaller version first."','A projector shows your last step in slow motion.'],
-    ally:['A guard lowers a visor: "I can tutor once. Ask."'],
-    glitch:['Curator glitches: "Solve before I... zzzip. Okay, slower now."']
-  };
-
-  const bossScripts = [
-    { id:'balance-core', topic:'equations', steps:['Check both sides of the equation visually.','Isolate x by moving one term.','Divide or multiply to finish.','Verify by plugging back in.'] },
-    { id:'neon-grid', topic:'coordinates', steps:['Locate the quadrant.','Count grid steps (Manhattan).','Plot treasure point.','Check mirror symmetry.'] },
-    { id:'percent-pulse', topic:'decimals', steps:['Turn percent into decimal.','Find part of the whole.','Recombine price and adjustment.','Sense-check with rounding.'] },
-    { id:'shape-warden', topic:'geometry', steps:['Split the shape.','Find each rectangle measure.','Add totals.','Check perimeter or area.'] },
-  ];
-
-  window.Content = { wings, curatorPersonalities, obstacleTemplates, narration, bossScripts };
-})();
   // Wing themes and story flavor
   const wings = [
     {
@@ -118,31 +80,31 @@
     ],
     miss:[
       'The floor hums: “Try a smaller version first.”',
-      'A projector replays your last step in slow motion.'
+      'A projector shows your last step in slow motion.',
+      'The panel repeats the hint: precision first.'
     ],
     ally:[
-      'A guard lowers a visor: “I can tutor once. Ask.”'
+      'A guard lowers a visor: “I can tutor once. Ask.”',
+      'Ally whispers: “Mirror math helps. Try Balance Beam.”'
     ],
     glitch:[
-      'Curator glitches: “Solve before I… zzzip. Okay, slower now.”'
-    ],
-    doorChoices:[
-      'Two exits appear. One is safe. One is spicy.',
-      'Pick a route. Your future self will judge you.'
+      'Curator glitches: “Solve before I... zzzip. Okay, slower now.”',
+      'Neon text stutters: “Mist…ake detected. Recenter.”'
     ]
   };
 
   const bossScripts = [
-    { id:'balance-core', topic:'equations', steps:['Spot the x term.','Move constants to one side.','Divide or multiply to finish.','Verify by plugging back in.'] },
-    { id:'neon-grid', topic:'coordinates', steps:['Identify the quadrant.','Count grid steps.','Plot the point.','Double-check the signs.'] },
-    { id:'percent-pulse', topic:'decimals', steps:['Convert percent to decimal.','Find the part of the whole.','Add/subtract adjustment.','Sense-check by rounding.'] },
-    { id:'shape-warden', topic:'geometry', steps:['Split the shape.','Find each area/perimeter piece.','Combine totals.','Check your units.'] },
+    { id:'balance-core', topic:'equations',  steps:['Check both sides of the equation visually.','Isolate x by moving one term.','Divide or multiply to finish.','Verify by plugging back in.'] },
+    { id:'neon-grid',    topic:'coordinates',steps:['Locate the quadrant.','Count grid steps (Manhattan).','Plot treasure point.','Check mirror symmetry.'] },
+    { id:'percent-pulse',topic:'decimals',   steps:['Turn percent into decimal.','Find part of the whole.','Recombine price and adjustment.','Sense-check with rounding.'] },
+    { id:'shape-warden', topic:'geometry',   steps:['Split the shape.','Find each rectangle measure.','Add totals.','Check perimeter or area.'] },
   ];
 
-  // Shop inventory (buy with Gems)
+  // Shop items (gadgets + cosmetics)
   const shopItems = [
-    { id:'g_balance', type:'gadget', name:'Balance Beam', price:18, desc:'Turns on Mirror Math visuals for equation locks (and some tricky steps).' },
-    { id:'g_percent', type:'gadget', name:'Percent Lens', price:14, desc:'Adds a quick percent→decimal nudge on percent locks.' },
+    { id:'g_xray', type:'gadget', name:'X-Ray Goggles', price:14, desc:'Removes one wrong option in a choice lock.' },
+    { id:'g_balance', type:'gadget', name:'Balance Beam', price:16, desc:'Reveals a mirror-math hint for equations.' },
+    { id:'g_percent', type:'gadget', name:'Percent Lens', price:14, desc:'Shows a percent-to-decimal nudge.' },
     { id:'g_checkpoint', type:'gadget', name:'Checkpoint Token', price:22, desc:'One “undo” for a mistake in a boss vault.' },
     { id:'g_smoke', type:'gadget', name:'Smoke Bomb', price:16, desc:'Temporarily blocks roaming sentry orbs in a room.' },
 
@@ -153,10 +115,10 @@
 
   // Run missions: one is chosen each run.
   const missions = [
-    { id:'no-hints-3', title:'Ghost Hacker', desc:'Clear 3 locks without using a hint.', reward: 10 },
-    { id:'streak-5', title:'Combo Artist', desc:'Hit a streak of 5 correct locks.', reward: 12 },
-    { id:'no-sentry-hit', title:'Quiet Feet', desc:'Finish the run without touching a sentry orb.', reward: 10 },
-    { id:'boss-clean', title:'Vault Whisperer', desc:'Beat the boss vault with at most 1 hint.', reward: 14 }
+    { id:'no-hints-3',   title:'Ghost Hacker',    desc:'Clear 3 locks without using a hint.',                reward: 10 },
+    { id:'streak-5',     title:'Combo Artist',    desc:'Hit a streak of 5 correct locks.',                   reward: 12 },
+    { id:'no-sentry-hit',title:'Quiet Feet',      desc:'Finish the run without touching a sentry orb.',      reward: 10 },
+    { id:'boss-clean',   title:'Vault Whisperer', desc:'Beat the boss vault with at most 1 hint.',           reward: 14 }
   ];
 
   // Simple cosmetic metadata for visuals.
